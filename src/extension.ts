@@ -4,8 +4,8 @@ import * as vscode from 'vscode';
 import { LeetCodeService } from './leetcode/LeetCodeService';
 import { LeetCodeTreeDataProvider } from './leetcode/LeetCodeTreeDataProvider';
 import { generateProblemHTML, parseLcProblemFileName } from './helpers';
-import { LeetCodeCodelensProvider } from './leetcode/LeetCodeCodeLensProvider';
 import { InterpretationDetails } from './leetcode/LeetCode';
+import { LeetCodeCodelensProvider } from './leetcode/LeetCodeCodelensProvider';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed

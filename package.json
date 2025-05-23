@@ -9,6 +9,10 @@
     "name": "Venkat S Bitra",
     "email": "vsb2127@columbia.edu"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VenkatSBitra/leetcode-tracker"
+  },
   "engines": {
     "vscode": "^1.100.2"
   },
