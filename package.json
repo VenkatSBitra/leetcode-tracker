@@ -1,0 +1,143 @@
+{
+  "name": "leetcode-tracker",
+  "displayName": "leetcode_tracker",
+  "description": "VSCode LeetCode Tracker",
+  "version": "0.0.1",
+  "publisher": "VenkatSBitra",
+  "license": "MIT",
+  "author": {
+    "name": "Venkat S Bitra",
+    "email": "vsb2127@columbia.edu"
+  },
+  "engines": {
+    "vscode": "^1.100.2"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:leetcodeTrackerView"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "leetcode-tracker-explorer",
+          "title": "LeetCode Tracker",
+          "icon": "media/leetcode.svg" 
+        }
+      ]
+    },
+    "views": {
+      "leetcode-tracker-explorer": [ 
+        {
+          "id": "leetcodeTrackerView",
+          "name": "Problems",
+          "icon": "media/leetcode.svg",
+          "contextualTitle": "LeetCode Tracker"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "leetcode-tracker.helloWorld",
+        "title": "Hello World",
+        "category": "LeetCode Tracker"
+      },
+      {
+        "command": "leetcode-tracker.login",
+        "title": "Login",
+        "category": "LeetCode Tracker"
+      },
+      {
+        "command": "leetcode-tracker.logout",
+        "title": "Logout",
+        "category": "LeetCode Tracker"
+      },
+      {
+        "command": "leetcode-tracker.refresh",
+        "title": "Refresh",
+        "category": "LeetCode Tracker"
+      },
+      {
+        "command": "leetcode-tracker.refreshEntry",
+        "title": "Force Refresh",
+        "category": "LeetCode Tracker"
+      },
+      {
+        "command": "leetcode-tracker.showProblemDescription",
+        "title": "Show Problem Description",
+        "category": "LeetCode Tracker"
+      },
+      {
+        "command": "leetcode-tracker.submitSolution",
+        "title": "Submit Solution",
+        "category": "LeetCode Tracker"
+      },
+      {
+        "command": "leetcode-tracker.testSolution",
+        "title": "Test Solution",
+        "category": "LeetCode Tracker"
+      },
+      {
+        "command": "leetcode-tracker.clearSolved",
+        "title": "Clear Solved Problems",
+        "category": "LeetCode Tracker"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceFilename =~ /^[^/]+\\.lc\\.[^/]+$/ && editorLangId != 'log'",
+          "command": "leetcode-tracker.submitSolution",
+          "group": "navigation@1" 
+        },
+        {
+          "when": "resourceFilename =~ /^[^/]+\\.lc\\.[^/]+$/ && editorLangId != 'log'",
+          "command": "leetcode-tracker.testSolution",
+          "group": "navigation@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "leetcode-tracker.submitSolution",
+          "when": "editorIsOpen && resourceFilename =~ /^[^/]+\\.lc\\.[^/]+$/"
+        },
+        {
+          "command": "leetcode-tracker.testSolution",
+          "when": "editorIsOpen && resourceFilename =~ /^[^/]+\\.lc\\.[^/]+$/"
+        }
+      ]
+    }
+  },
+
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.100.0",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.23.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.2",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "axios": "^1.9.0"
+  }
+}
