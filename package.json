@@ -14,7 +14,7 @@
     "url": "https://github.com/VenkatSBitra/leetcode-tracker"
   },
   "engines": {
-    "vscode": "^1.100.2"
+    "vscode": "^1.80.0"
   },
   "categories": [
     "Other"
