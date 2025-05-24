@@ -2,7 +2,7 @@
   "name": "leetcode-tracker",
   "displayName": "leetcode_tracker",
   "description": "VSCode LeetCode Tracker",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "VenkatSBitra",
   "license": "MIT",
   "author": {
@@ -130,7 +130,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
-    "@types/vscode": "^1.100.0",
+    "@types/vscode": "^1.80.0",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
     "@vscode/test-cli": "^0.0.10",
