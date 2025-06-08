@@ -140,9 +140,19 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<TreeEle
 
     private async fetchProblemsInternal(forceRefresh: boolean = false): Promise<void> {
         const result = await this.leetCodeService.fetchAllProblems(forceRefresh);
+
+        if (result === null) {
+            // If result is null, it means there was an error fetching problems
+            if (this.isLoggedIn) {
+                vscode.window.showErrorMessage('Failed to fetch problems from LeetCode. Please try again later.');
+            }
+            this.problems = [];
+            return;
+        }
+
         const fetchedProblems = result ? result[0] : null;
         const completedProblems = result ? result[1] : null;
-        if (fetchedProblems && completedProblems) {
+        if ((fetchedProblems !== null) && (completedProblems !== null)) {
             // console.log('Fetched problems:', fetchedProblems);
             this.problems = fetchedProblems.map(problem => {
                 return new ProblemTreeItem(
@@ -166,8 +176,13 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<TreeEle
                 return acc;
             }, {} as Record<string, ProblemTreeItem[]>);
 
-            const companiesQ = fetchedProblems.filter(e => e.companyTags !== undefined).map(problem => {
+            const companiesQ = fetchedProblems.filter(
+                e => (e.companyTags !== undefined) && (JSON.parse(e.companyTags as string) !== null)
+            ).map(problem => {
                 const json = JSON.parse(problem.companyTags as string);
+                if (!json || typeof json !== 'object' || !json['1'] || !json['2'] || !json['3']) {
+                    return [];
+                }
                 const compTags = [...json['1'], ...json['2'], ...json['3']];
                 return compTags.map(tag => {
                     return {
@@ -196,11 +211,22 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<TreeEle
     // Implement the required methods for the TreeDataProvider interface
     public async refresh(forceRefresh: boolean = false): Promise<void> {
         this.isLoggedIn = this.leetCodeService.areCookiesSet();
-        // console.log(this.isLoggedIn);
-        await this.fetchProblemsInternal(forceRefresh);
-        if (forceRefresh) {
+        if (this.isLoggedIn) {
+            await this.fetchProblemsInternal(forceRefresh);
+            // if (forceRefresh) {
+            //     this.problems = [];
+            // }
+        } else {
             this.problems = [];
+            this.easyProblems = [];
+            this.mediumProblems = [];
+            this.hardProblems = [];
+            this.tags = [];
+            this.tagProblems = {};
+            this.companies = {};
+            this.companyProblems = {};
         }
+        // console.log(this.isLoggedIn);
         this._onDidChangeTreeData.fire(undefined);
     }
 

@@ -1,9 +1,9 @@
 {
   "name": "leetcode-tracker",
-  "displayName": "leetcode_tracker",
+  "publisher": "venkatsbitra",
+  "displayName": "LeetCode Tracker",
   "description": "VSCode LeetCode Tracker",
-  "version": "0.0.2",
-  "publisher": "VenkatSBitra",
+  "version": "1.0.0",
   "license": "MIT",
   "author": {
     "name": "Venkat S Bitra",
@@ -20,6 +20,15 @@
     "Other"
   ],
   "activationEvents": [
+    "onCommand:leetcode-tracker.helloWorld",
+    "onCommand:leetcode-tracker.login",
+    "onCommand:leetcode-tracker.logout",
+    "onCommand:leetcode-tracker.refresh",
+    "onCommand:leetcode-tracker.refreshEntry",
+    "onCommand:leetcode-tracker.showProblemDescription",
+    "onCommand:leetcode-tracker.submitSolution",
+    "onCommand:leetcode-tracker.testSolution",
+    "onCommand:leetcode-tracker.clearSolved",
     "onView:leetcodeTrackerView"
   ],
   "main": "./dist/extension.js",

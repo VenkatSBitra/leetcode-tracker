@@ -83,35 +83,36 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('leetcode-tracker.login', async () => {
 			const cookie = await vscode.window.showInputBox({
-				prompt: 'Enter your LeetCode session cookie',
-				placeHolder: 'LEETCODE_SESSION'
+				prompt: 'Enter your LeetCode session cookie and CSRF token separated by a hash (#)',
+				placeHolder: 'LEETCODE_SESSION#csrftoken'
 			});
 			if (!cookie) {
 				vscode.window.showErrorMessage('Cookie is required');
 				return;
 			}
 
-			const csrfToken = await vscode.window.showInputBox({
-				prompt: 'Enter your CSRF token',
-				placeHolder: 'csrftoken'
-			});
+			const [sessionCookie, csrfToken] = cookie.split('#');
 			if (!csrfToken) {
 				vscode.window.showErrorMessage('CSRF token is required');
 				return;
 			}
-
-			const leetCodeService = new LeetCodeService(context.secrets, context.globalState);
-			await leetCodeService.setAuthCookies(cookie, csrfToken);
+            
+			await leetCodeService.setAuthCookies(sessionCookie, csrfToken);
+            await leetCodeService.initializeAuthFromStorage();
+            await leetCodeTreeDataProvider.refresh();
 			vscode.window.showInformationMessage('Logged in successfully!');
 		})
 	);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('leetcode-tracker.logout', async () => {
+            if (!leetCodeService.areCookiesSet()) {
+				return;
+			}
 			try {
 				await leetCodeService.clearAuthCookies();
 				vscode.window.showInformationMessage('Logged out and credentials cleared. Refreshing view.');
-				leetCodeTreeDataProvider.refresh();
+				await leetCodeTreeDataProvider.refresh();
 			} catch (error) {
 				vscode.window.showErrorMessage(`Failed to clear credentials: ${error}`);
 			}
@@ -120,7 +121,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('leetcode-tracker.showProblemDescription', async (titleSlug, questionId) => {
-			if (!titleSlug) {
+			if (!leetCodeService.areCookiesSet()) {
+				return;
+			}
+
+            if (!titleSlug) {
 				vscode.window.showErrorMessage('Invalid problem selected.');
 				return;
 			}
@@ -227,6 +232,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('leetcode-tracker.testSolution', async () => {
+            if (!leetCodeService.areCookiesSet()) {
+                vscode.window.showErrorMessage('You must be logged in to test solutions.');
+				return;
+			}
+
 			const editor = vscode.window.activeTextEditor;
 			if (!editor) {
 				vscode.window.showErrorMessage('No active editor found.');
@@ -401,6 +411,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('leetcode-tracker.submitSolution', async () => {
+            if (!leetCodeService.areCookiesSet()) {
+                vscode.window.showErrorMessage('You must be logged in to submit solutions.');
+				return;
+			}
+
 			const editor = vscode.window.activeTextEditor;
 			if (!editor) {
 				vscode.window.showErrorMessage('No active editor found.');
