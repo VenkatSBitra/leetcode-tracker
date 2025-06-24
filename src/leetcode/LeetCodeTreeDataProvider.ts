@@ -49,6 +49,7 @@ export class ProblemTreeItem extends vscode.TreeItem {
     constructor(
         public readonly questionTitle: string, // Problem title
         public readonly questionId: string, // Problem ID
+        public readonly questionFrontendId: string, // Frontend ID for the problem
         public readonly difficulty: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly titleSlug: string,
@@ -138,6 +139,10 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<TreeEle
         this.isLoggedIn = this.leetCodeService.areCookiesSet();
     }
 
+    public async getProblems(forceRefresh: boolean = false): Promise<ProblemTreeItem[]> {
+        return this.problems;
+    }
+
     private async fetchProblemsInternal(forceRefresh: boolean = false): Promise<void> {
         const result = await this.leetCodeService.fetchAllProblems(forceRefresh);
 
@@ -159,6 +164,7 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<TreeEle
                     problem.title,
                     problem.questionFrontendId,
                     problem.difficulty,
+                    problem.questionId,
                     vscode.TreeItemCollapsibleState.None,
                     problem.titleSlug,
                     completedProblems[Number.parseInt(problem.questionFrontendId) - 1], // Ensure your problem objects from API have a 'status' field
@@ -360,7 +366,7 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<TreeEle
 
                 if (element.label === "Companies") {
                     return Object.keys(this.companies).sort().map(companyName => {
-                        return new CategoryTreeItem(companyName, vscode.TreeItemCollapsibleState.Collapsed, `${companyName} problems`);
+                        return new CategoryTreeItem(companyName, vscode.TreeItemCollapsibleState.Collapsed, `${this.companyProblems[companyName]?.length || 0} problems`);
                     });
                 }
 

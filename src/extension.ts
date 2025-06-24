@@ -255,6 +255,12 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 
 			const { questionId, titleSlug, langSlug, fullSlugPart } = problemInfo;
+            const problems = await leetCodeTreeDataProvider.getProblems();
+            const questionFrontendId = problems.find(p => p.questionId === questionId)?.questionFrontendId;
+            if (!questionFrontendId) {
+                vscode.window.showErrorMessage(`Problem with ID ${questionId} not found in the current workspace.`);
+                return;
+            }
 
 			const dataInput = await vscode.window.showInputBox({
                 prompt: "Enter custom test input (leave empty for default sample test cases)",
@@ -286,7 +292,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }, async (progress) => {
                 progress.report({ increment: 0, message: "Sending to LeetCode..." });
 
-                const testResponse = await leetCodeService.testSolution(questionId, langSlug, code, dataInput, titleSlug);
+                const testResponse = await leetCodeService.testSolution(questionFrontendId, langSlug, code, dataInput, titleSlug);
 
                 if (testResponse.error) {
                     progress.report({ increment: 100, message: "Test failed to start." });
