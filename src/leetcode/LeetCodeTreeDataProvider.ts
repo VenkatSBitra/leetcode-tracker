@@ -53,6 +53,7 @@ export class ProblemTreeItem extends vscode.TreeItem {
         public readonly difficulty: string,
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly titleSlug: string,
+        public readonly companies?: string[], // Optional: Companies associated with the problem
         public readonly status?: string, // e.g., "ac", "notac"
         private readonly extensionUri?: vscode.Uri // For custom SVG icons
     ) {
@@ -162,11 +163,12 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<TreeEle
             this.problems = fetchedProblems.map(problem => {
                 return new ProblemTreeItem(
                     problem.title,
+                    problem.questionId,
                     problem.questionFrontendId,
                     problem.difficulty,
-                    problem.questionId,
                     vscode.TreeItemCollapsibleState.None,
                     problem.titleSlug,
+                    JSON.parse(problem.companyTags || '{}'), // Assuming companies is an array of strings
                     completedProblems[Number.parseInt(problem.questionFrontendId) - 1], // Ensure your problem objects from API have a 'status' field
                     this.extensionUri
                 );
@@ -201,10 +203,30 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<TreeEle
                 acc[name] = slug;
                 return acc;
             }, {} as Record<string, string>);
-            this.companyProblems = companiesQ.filter(company => company.slug).reduce((acc, { slug }, i) => {
-                acc[slug] = [...(acc[slug] || []), this.problems[i]];
-                return acc;
-            }, {} as Record<string, ProblemTreeItem[]>);
+            const problemCompanies = fetchedProblems.map(problem => {
+                const json = JSON.parse(problem.companyTags as string);
+                if (!json || typeof json !== 'object' || !json['1'] || !json['2'] || !json['3']) {
+                    return [];
+                }
+                const compTags = [...json['1'], ...json['2'], ...json['3']];
+                return compTags.map(tag => {
+                    return {
+                        'name': tag.name,
+                        'slug': tag.slug,
+                    };
+                });
+            });
+            this.companyProblems = {};
+            // Build company problems mapping more efficiently
+            problemCompanies.forEach((companies, index) => {
+                companies.forEach(company => {
+                    const { name } = company;
+                    if (!this.companyProblems[name]) {
+                        this.companyProblems[name] = [];
+                    }
+                    this.companyProblems[name].push(this.problems[index]);
+                });
+            });
         } else {
             this.problems = [];
             // Optionally notify user if fetching failed despite being logged in

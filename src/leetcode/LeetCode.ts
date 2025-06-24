@@ -1,4 +1,5 @@
 import axios from 'axios';
+import * as vscode from 'vscode';
 
 export interface LeetCodeProblem {
     questionId: string;
@@ -143,7 +144,9 @@ export class LeetCode {
                 headers: headers
             });
 
-            // console.log('Response:', response.data);
+            const outputChannel = vscode.window.createOutputChannel('LeetCode');
+
+            outputChannel.appendLine('Fetching LeetCode problems...');
 
             const problems = response.data.data.problemsetQuestionList.questions.map((q: any): LeetCodeProblem => ({
                 questionId: q.questionId,
@@ -156,6 +159,11 @@ export class LeetCode {
                 tags: q.topicTags.map((tag: any) => tag.name),
                 companyTags: q.companyTagStats
             }));
+
+            outputChannel.appendLine(`Fetched ${problems.length} problems.`);
+            for (const problem of problems) {
+                outputChannel.appendLine(`- ${problem.title} (${problem.questionId}, ${problem.questionFrontendId}) - Difficulty: ${problem.difficulty} - Company Tags: ${problem.companyTags || 'None'}`);
+            }
 
             return problems;
         } catch (error) {

@@ -256,8 +256,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			const { questionId, titleSlug, langSlug, fullSlugPart } = problemInfo;
             const problems = await leetCodeTreeDataProvider.getProblems();
-            const questionFrontendId = problems.find(p => p.questionId === questionId)?.questionFrontendId;
-            if (!questionFrontendId) {
+            const qId = problems.find(p => p.questionFrontendId === questionId)?.questionId;
+            if (!qId) {
                 vscode.window.showErrorMessage(`Problem with ID ${questionId} not found in the current workspace.`);
                 return;
             }
@@ -292,7 +292,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }, async (progress) => {
                 progress.report({ increment: 0, message: "Sending to LeetCode..." });
 
-                const testResponse = await leetCodeService.testSolution(questionFrontendId, langSlug, code, dataInput, titleSlug);
+                const testResponse = await leetCodeService.testSolution(qId, langSlug, code, dataInput, titleSlug);
 
                 if (testResponse.error) {
                     progress.report({ increment: 100, message: "Test failed to start." });
@@ -440,6 +440,12 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 
 			const { questionId, titleSlug, langSlug, fullSlugPart } = problemInfo;
+            const problems = await leetCodeTreeDataProvider.getProblems();
+            const qId = problems.find(p => p.questionFrontendId === questionId)?.questionId;
+            if (!qId) {
+                vscode.window.showErrorMessage(`Problem with ID ${questionId} not found in the current workspace.`);
+                return;
+            }
 
 			const outputChannel = getTestResultsOutputChannel();
             outputChannel.clear();
@@ -452,7 +458,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }, async (progress) => {
                 progress.report({ increment: 0, message: "Sending to LeetCode..." });
 
-                const testResponse = await leetCodeService.submitSolution(questionId, langSlug, code, titleSlug);
+                const testResponse = await leetCodeService.submitSolution(qId, langSlug, code, titleSlug);
 
                 if (testResponse.error) {
                     progress.report({ increment: 100, message: "Test failed to start." });
