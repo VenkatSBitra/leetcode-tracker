@@ -158,7 +158,7 @@ export class LeetCodeService {
             }
 
             const exampleTestcases = this.globalState.get<string[]>(CACHED_EXAMPLE_TESTS_KEY);
-
+    
             const problemDetails = await this.leetCode.getProblemDetails(titleSlug, this.headers);
 
             if (problemDetails && exampleTestcases) {
@@ -228,6 +228,7 @@ export class LeetCodeService {
 
     public async testSolution(
         questionId: string,
+        questionFrontendId: string,
         langSlug: string,
         typedCode: string,
         dataInput: string, // Empty string for default test cases often works
@@ -241,7 +242,7 @@ export class LeetCodeService {
             const exampleTestcases = this.globalState.get<string[]>(CACHED_EXAMPLE_TESTS_KEY);
             // console.log('Example test cases:', exampleTestcases);
 
-            const exampleTestcase = exampleTestcases ? (exampleTestcases[Number.parseInt(questionId) - 1] || '') : '';
+            const exampleTestcase = exampleTestcases ? (exampleTestcases[Number.parseInt(questionFrontendId) - 1] || '') : '';
 
             // console.log('Testing solution with dataInput:', exampleTestcase);
 

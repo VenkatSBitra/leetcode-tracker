@@ -57,9 +57,9 @@ export class ProblemTreeItem extends vscode.TreeItem {
         public readonly status?: string, // e.g., "ac", "notac"
         private readonly extensionUri?: vscode.Uri // For custom SVG icons
     ) {
-        super(`[${questionId}] ${questionTitle}`, collapsibleState);
-        this.label = `[${questionId}] ${questionTitle}`;
-        this.tooltip = `[${this.questionId}] ${this.questionTitle} - ${this.difficulty}`;
+        super(`[${questionFrontendId}] ${questionTitle}`, collapsibleState);
+        this.label = `[${questionFrontendId}] ${questionTitle}`;
+        this.tooltip = `[${this.questionFrontendId}] ${this.questionTitle} - ${this.difficulty}`;
         this.description = this.difficulty;
 
         let iconColor: vscode.ThemeColor | undefined = undefined;
@@ -100,7 +100,7 @@ export class ProblemTreeItem extends vscode.TreeItem {
         this.command = {
             command: 'leetcode-tracker.showProblemDescription',
             title: 'Show Problem Description',
-            arguments: [this.titleSlug, this.questionId]
+            arguments: [this.titleSlug, this.questionFrontendId]
         };
     }
     contextValue = 'problemItem';

@@ -62,6 +62,7 @@ export interface InterpretationDetails { // For polling
     correct_answer?: boolean; // true if the output matches the expected output
     code_answer?: string; // The actual output of the code
     expected_code_answer?: string; // The expected output
+    input?: string; // Input used for the test
     // ... other relevant fields
 }
 
@@ -159,6 +160,7 @@ export class LeetCode {
                 tags: q.topicTags.map((tag: any) => tag.name),
                 companyTags: q.companyTagStats
             }));
+            problems.sort((a: LeetCodeProblem, b: LeetCodeProblem) => parseInt(a.questionFrontendId) - parseInt(b.questionFrontendId));
 
             outputChannel.appendLine(`Fetched ${problems.length} problems.`);
             for (const problem of problems) {

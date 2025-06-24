@@ -292,7 +292,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }, async (progress) => {
                 progress.report({ increment: 0, message: "Sending to LeetCode..." });
 
-                const testResponse = await leetCodeService.testSolution(qId, langSlug, code, dataInput, titleSlug);
+                const testResponse = await leetCodeService.testSolution(qId, questionId, langSlug, code, dataInput, titleSlug);
 
                 if (testResponse.error) {
                     progress.report({ increment: 100, message: "Test failed to start." });
@@ -352,17 +352,30 @@ export async function activate(context: vscode.ExtensionContext) {
                             if(interpretationDetails.status_runtime) {outputChannel.appendLine(`Runtime: ${interpretationDetails.status_runtime}`);}
                             if(interpretationDetails.memory) {outputChannel.appendLine(`Memory: ${interpretationDetails.memory}`);}
 
-                            if(testResponse.test_case) { // Input used by LeetCode
-                                outputChannel.appendLine("\nInput (from LeetCode):");
-                                outputChannel.appendLine(testResponse.test_case);
-                            }
+                            const testCaseSplit = testResponse.test_case?.split('\n') || interpretationDetails.input?.split('\n') || [];
 
-                            if (interpretationDetails.code_answer !== undefined && interpretationDetails.expected_code_answer !== undefined && interpretationDetails.compare_result !== undefined) {
+                            if ((interpretationDetails.code_answer !== undefined) && (interpretationDetails.expected_code_answer !== undefined) && (interpretationDetails.compare_result !== undefined)) {
                                 const codeAnswer = interpretationDetails.code_answer;
 								const expectedCodeAnswer = interpretationDetails.expected_code_answer;
+                                outputChannel.appendLine(`Code Ans:\n${JSON.stringify(codeAnswer, null, 2)}`);
+                                outputChannel.appendLine(`Expected Code Ans:\n${JSON.stringify(expectedCodeAnswer, null, 2)}`);
+                                const testCases = [];
+                                if (testCaseSplit.length > 0) {
+                                    if (testCaseSplit.length % interpretationDetails.compare_result.length === 0) {
+                                       const k = testCaseSplit.length / interpretationDetails.compare_result.length;
+                                        for (let i = 0; i < interpretationDetails.compare_result.length; i++) {
+                                            const testCase = testCaseSplit.slice(i * k, (i + 1) * k);
+                                            testCases.push(testCase.join('\n'));
+                                        }
+                                    }
+                                }
+                                outputChannel.appendLine(`Test: ${JSON.stringify(testCases, null, 2)}`);
 								for (let i = 0; i < interpretationDetails.compare_result.length; i++) {
 									const result = interpretationDetails.compare_result[i];
-									outputChannel.appendLine(`\nYour Answer (${i + 1}): ${codeAnswer[i]}`);
+                                    if (testCases.length > 0) {
+                                        outputChannel.appendLine(`\nTest Case (${i + 1}):\n${testCases[i].trim()}`);
+                                    }
+									outputChannel.appendLine(`Your Answer (${i + 1}): ${codeAnswer[i]}`);
 									outputChannel.appendLine(`Expected Answer (${i + 1}): ${expectedCodeAnswer[i]}`);
 									outputChannel.appendLine(`Comparison ${i + 1}: ${result === '1' ? 'Correct' : 'Incorrect'}`);
 								}
@@ -525,10 +538,12 @@ export async function activate(context: vscode.ExtensionContext) {
 								outputChannel.appendLine(`Memory: ${interpretationDetails.memory}`);
 								outputChannel.appendLine(`Memory Percentile: ${interpretationDetails.memory_percentile}`);
 							} else {
+                                outputChannel.appendLine(`Test Response: ${JSON.stringify(testResponse, null, 2)}`);
+                                outputChannel.appendLine(`Interpretation Response: ${JSON.stringify(interpretationDetails, null, 2)}`);
 								outputChannel.appendLine("\nInput (from LeetCode):");
-                                outputChannel.appendLine(testResponse.last_testcase);
-								outputChannel.appendLine(`Your Output:\n${testResponse.code_output}`);
-								outputChannel.appendLine(`Expected Output:\n${testResponse.expected_code_output}`);
+                                outputChannel.appendLine(interpretationDetails.input || "N/A");
+								outputChannel.appendLine(`Your Output:\n${interpretationDetails.code_output}`);
+								outputChannel.appendLine(`Expected Output:\n${interpretationDetails.expected_output}`);
 							}
 
                             if (interpretationDetails.status_msg !== "Accepted" && interpretationDetails.status_msg !== "Finished") {
