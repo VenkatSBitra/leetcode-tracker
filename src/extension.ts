@@ -591,6 +591,33 @@ export async function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
+    // Define a custom interface extending QuickPickItem
+    interface ProblemQuickPickItem extends vscode.QuickPickItem {
+        problemId: string;
+        questionId: string;
+        titleSlug: string;
+    }
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('leetcode-tracker.searchProblems', async () => {
+            // Open VSCode's Quick Pick to get the search query
+            const problems = await leetCodeTreeDataProvider.getProblems();
+            const quickPickItems: ProblemQuickPickItem[] = problems.map(problem => ({
+                label: `${problem.questionFrontendId}. ${problem.questionTitle}`,
+                description: problem.difficulty,
+                detail: problem.titleSlug,
+                problemId: problem.questionId,
+                questionId: problem.questionFrontendId,
+                titleSlug: problem.titleSlug,
+            }));
+            const selected = await vscode.window.showQuickPick(quickPickItems, { placeHolder: 'Select a problem to view' });
+            // If the user selects a problem, open its description
+            if (selected) {
+                await vscode.commands.executeCommand('leetcode-tracker.showProblemDescription', selected.titleSlug, selected.questionId);
+            }
+        })
+    );
+
 }
 
 // This method is called when your extension is deactivated

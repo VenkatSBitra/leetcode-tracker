@@ -305,6 +305,18 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<TreeEle
 
                 rootItems.push(
                     new ActionTreeItem(
+                        'Search Problems',
+                        vscode.TreeItemCollapsibleState.None,
+                        'search',
+                        {
+                            command: 'leetcode-tracker.searchProblems',
+                            title: 'Search Problems',
+                        }
+                    )
+                );
+
+                rootItems.push(
+                    new ActionTreeItem(
                         'Clear Solved Problems',
                         vscode.TreeItemCollapsibleState.None,
                         'notebook-delete-cell',

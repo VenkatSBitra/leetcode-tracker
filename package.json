@@ -29,6 +29,7 @@
     "onCommand:leetcode-tracker.submitSolution",
     "onCommand:leetcode-tracker.testSolution",
     "onCommand:leetcode-tracker.clearSolved",
+    "onCommand:leetcode-tracker.searchProblems",
     "onView:leetcodeTrackerView"
   ],
   "main": "./dist/extension.js",
@@ -96,6 +97,11 @@
       {
         "command": "leetcode-tracker.clearSolved",
         "title": "Clear Solved Problems",
+        "category": "LeetCode Tracker"
+      },
+      {
+        "command": "leetcode-tracker.searchProblems",
+        "title": "Search Problems",
         "category": "LeetCode Tracker"
       }
     ],
