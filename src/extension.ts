@@ -172,19 +172,52 @@ export async function activate(context: vscode.ExtensionContext) {
                                 fileUri = vscode.Uri.joinPath(folderUri, fileName);
 																
 								// Check if the file already exists
-								try {
-									await vscode.workspace.fs.stat(fileUri);
-									// File exists, just open it by default
-									const existingDoc = await vscode.workspace.openTextDocument(fileUri);
-									await vscode.window.showTextDocument(existingDoc, vscode.ViewColumn.One);
-									vscode.window.showInformationMessage(`Opened existing solution file: ${fileName}`);
-								} catch (e) {
-									// File doesn't exist, create it
-									await vscode.workspace.fs.writeFile(fileUri, Buffer.from(defaultCode, 'utf8'));
-									const doc = await vscode.workspace.openTextDocument(fileUri);
-									await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
-									vscode.window.showInformationMessage(`Created new solution file: ${fileName}`);
-								}
+                                try {
+                                    await vscode.workspace.fs.stat(fileUri);
+                                    // File exists, just open it by default
+                                    const existingDoc = await vscode.workspace.openTextDocument(fileUri);
+                                    await vscode.window.showTextDocument(existingDoc, vscode.ViewColumn.One);
+                                    vscode.window.showInformationMessage(`Opened existing solution file: ${fileName}`);
+                                } catch (e) {
+                                    // File doesn't exist, create it
+                                    // Add comment delimiters appropriate for any language
+                                    let startDelimiter = "// @[lc-start]";
+                                    let endDelimiter = "// @[lc-end]";
+                                    
+                                    // Adjust comment style based on language
+                                    // Languages that use # for comments
+                                    if (['python', 'py', 'python3', 'ruby', 'rb', 'bash', 'shell', 'sh', 'elixir'].includes(langValue)) {
+                                        startDelimiter = "# @[lc-start]";
+                                        endDelimiter = "# @[lc-end]";
+                                    // Languages that use // for comments
+                                    } else if (['golang', 'go', 'php', 'kotlin', 'kt', 'scala', 'rust', 'rs', 'swift'].includes(langValue)) {
+                                        startDelimiter = "// @[lc-start]";
+                                        endDelimiter = "// @[lc-end]";
+                                    // HTML/XML comments
+                                    } else if (['html', 'xml'].includes(langValue)) {
+                                        startDelimiter = "<!-- @[lc-start] -->";
+                                        endDelimiter = "<!-- @[lc-end] -->";
+                                    // SQL comments
+                                    } else if (['sql', 'mysql', 'mssql', 'pgsql'].includes(langValue)) {
+                                        startDelimiter = "-- @[lc-start]";
+                                        endDelimiter = "-- @[lc-end]";
+                                    // Racket comments
+                                    } else if (['racket'].includes(langValue)) {
+                                        startDelimiter = "; @[lc-start]";
+                                        endDelimiter = "; @[lc-end]";
+                                    // Erlang comments
+                                    } else if (['erlang'].includes(langValue)) {
+                                        startDelimiter = "% @[lc-start]";
+                                        endDelimiter = "% @[lc-end]";
+                                    }
+                                    
+                                    const codeWithDelimiters = 
+                                        `${startDelimiter}\n\n${defaultCode}\n\n${endDelimiter}`;
+                                    await vscode.workspace.fs.writeFile(fileUri, Buffer.from(codeWithDelimiters, 'utf8'));
+                                    const doc = await vscode.workspace.openTextDocument(fileUri);
+                                    await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
+                                    vscode.window.showInformationMessage(`Created new solution file: ${fileName}`);
+                                }
                             } else {
                                 // No workspace folder, create an untitled file
                                 // Note: This approach won't use the desired filename directly for an untitled file's "dirty" state.
@@ -246,6 +279,33 @@ export async function activate(context: vscode.ExtensionContext) {
 			const document = editor.document;
 			const fileName = document.fileName;
 			const code = document.getText();
+
+            // Extract code between delimiters if present
+            let solutionCode = code;
+            // Use a simpler, more generic approach to extract code between markers
+            const startMarker = /@\[lc-start\]/;
+            const endMarker = /@\[lc-end\]/;
+
+            const startIndex = code.search(startMarker);
+            const endIndex = code.search(endMarker);
+
+            if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
+                // Find the end of the line containing the start marker
+                const startLineEnd = code.indexOf('\n', startIndex) + 1;
+                
+                // Find the beginning of the line containing the end marker
+                const endLineStart = code.lastIndexOf('\n', endIndex) + 1;
+                
+                if (startLineEnd > 0 && endLineStart > 0 && startLineEnd < endLineStart) {
+                    solutionCode = code.substring(startLineEnd, endLineStart).trim();
+                }
+            }
+
+            // Final fallback if no markers found or extraction failed
+            if (!solutionCode || solutionCode === "") {
+                solutionCode = code;
+            }
+
 			const languageId = document.languageId;
 			const problemInfo = parseLcProblemFileName(fileName);
 
@@ -292,7 +352,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }, async (progress) => {
                 progress.report({ increment: 0, message: "Sending to LeetCode..." });
 
-                const testResponse = await leetCodeService.testSolution(qId, questionId, langSlug, code, dataInput, titleSlug);
+                const testResponse = await leetCodeService.testSolution(qId, questionId, langSlug, solutionCode, dataInput, titleSlug);
 
                 if (testResponse.error) {
                     progress.report({ increment: 100, message: "Test failed to start." });
@@ -444,6 +504,34 @@ export async function activate(context: vscode.ExtensionContext) {
 			const document = editor.document;
 			const fileName = document.fileName;
 			const code = document.getText();
+
+            // Extract code between delimiters if present
+            let solutionCode = code;
+            // Use a simpler, more generic approach to extract code between markers
+            const startMarker = /@\[lc-start\]/;
+            const endMarker = /@\[lc-end\]/;
+
+            const startIndex = code.search(startMarker);
+            const endIndex = code.search(endMarker);
+
+            if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
+                // Find the end of the line containing the start marker
+                const startLineEnd = code.indexOf('\n', startIndex) + 1;
+                
+                // Find the beginning of the line containing the end marker
+                const endLineStart = code.lastIndexOf('\n', endIndex) + 1;
+                
+                if (startLineEnd > 0 && endLineStart > 0 && startLineEnd < endLineStart) {
+                    solutionCode = code.substring(startLineEnd, endLineStart).trim();
+                }
+            }
+
+            // Final fallback if no markers found or extraction failed
+            if (!solutionCode || solutionCode === "") {
+                solutionCode = code;
+            }
+
+
 			const languageId = document.languageId;
 			const problemInfo = parseLcProblemFileName(fileName);
 
@@ -471,7 +559,7 @@ export async function activate(context: vscode.ExtensionContext) {
             }, async (progress) => {
                 progress.report({ increment: 0, message: "Sending to LeetCode..." });
 
-                const testResponse = await leetCodeService.submitSolution(qId, langSlug, code, titleSlug);
+                const testResponse = await leetCodeService.submitSolution(qId, langSlug, solutionCode, titleSlug);
 
                 if (testResponse.error) {
                     progress.report({ increment: 100, message: "Test failed to start." });
